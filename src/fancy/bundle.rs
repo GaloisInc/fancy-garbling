@@ -63,6 +63,11 @@ impl<W: Clone + HasModulus> Bundle<W> {
     pub fn iter(&self) -> std::slice::Iter<W> {
         self.0.iter()
     }
+
+    /// Access the underlying iterator
+    pub fn into_iter(self) -> impl std::iter::Iterator<Item=W> {
+        self.0.into_iter()
+    }
 }
 
 impl<W: Clone + HasModulus> Index<usize> for Bundle<W> {

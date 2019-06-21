@@ -314,4 +314,68 @@ pub trait BinaryGadgets: Fancy + BundleGadgets {
             })?
         })
     }
+
+    /// Shift the bits of the bundle to the right by a constant amount
+    fn bin_lshr_constant(
+        &mut self,
+        xs: &BinaryBundle<Self::Item>,
+        c: usize,
+    ) -> Result<BinaryBundle<Self::Item>, Self::Error> {
+        let width = xs.wires().len();
+        let keep = width - c; // TODO: add checks
+        let zero = self.constant(0, 2)?;
+        let zeros = std::iter::repeat(&zero).take(c);
+        Ok(BinaryBundle::new(
+            xs.iter()
+            .skip(c)
+            .take(keep)
+            .chain(zeros)
+            .cloned()
+            .collect_vec()
+        ))
+    }
+
+    /// Shift the bits of the bundle to the right
+    fn bin_logical_shr(
+        &mut self,
+        xs: &BinaryBundle<Self::Item>,
+        ys: &BinaryBundle<Self::Item>, // amount to shift by
+    ) -> Result<BinaryBundle<Self::Item>, Self::Error> {
+        let width = xs.wires().len();
+        let c = 0 /* */;
+        let keep = width - c; // TODO: add checks
+        let zero = self.constant(0, 2)?;
+        let zeros = std::iter::repeat(&zero).take(c);
+        Ok(BinaryBundle::new(
+            xs.iter()
+            .skip(c)
+            .take(keep)
+            .chain(zeros)
+            .cloned()
+            .collect_vec()
+        ))
+    }
+
+    fn bin_mux_tree(
+        &mut self,
+        ix: &BinaryBundle<Self::Item>,
+        xs: &[Self::Item],
+    ) -> Result<Self::Item, Self::Error> {
+        if is.wires().len() == 0 {
+            return xs.to_vec;
+        }
+        
+        let b = ix.wires().last().unwrap();
+    
+        let half = xs.len()/2;
+        let first_half  = xs[..half];
+        let second_half = xs[half..];
+
+        let res = first_half.iter().zip(second_half.iter()).map(|(x,y)| {
+            self.mux(b, x, y)
+        }).collect::<Result<Vec<_>, _>>()?;
+        
+        self.multiplex(b, y, xs)
+    }
+
 }
