@@ -356,26 +356,23 @@ pub trait BinaryGadgets: Fancy + BundleGadgets {
         ))
     }
 
-    fn bin_mux_tree(
+    fn bin_mux_many(
         &mut self,
         ix: &BinaryBundle<Self::Item>,
         xs: &[Self::Item],
     ) -> Result<Self::Item, Self::Error> {
-        if is.wires().len() == 0 {
-            return xs.to_vec;
-        }
-        
-        let b = ix.wires().last().unwrap();
-    
-        let half = xs.len()/2;
-        let first_half  = xs[..half];
-        let second_half = xs[half..];
+        let nbits = ix.moduli().len();
 
-        let res = first_half.iter().zip(second_half.iter()).map(|(x,y)| {
-            self.mux(b, x, y)
-        }).collect::<Result<Vec<_>, _>>()?;
-        
-        self.multiplex(b, y, xs)
+        let mut sum = self.constant(0, 2)?;
+
+        for (i,x) in xs.iter().enumerate() {
+            let ix_  = self.bin_constant_bundle(i as u128, nbits)?;
+            let mask = self.eq_bundles(ix, &ix_)?;
+            let y    = self.mul(&mask, x)?;
+            sum = self.add(&sum, &y)?;
+        }
+
+        Ok(sum)
     }
 
 }
