@@ -16,10 +16,12 @@ mod binary;
 mod bundle;
 mod crt;
 mod input;
+mod output;
 pub use binary::{BinaryBundle, BinaryGadgets};
 pub use bundle::{Bundle, BundleGadgets};
 pub use crt::{CrtBundle, CrtGadgets};
 pub use input::FancyInput;
+pub use output::FancyOutput;
 
 /// An object that has some modulus. Basic object of `Fancy` computations.
 pub trait HasModulus {
@@ -59,9 +61,6 @@ pub trait Fancy {
         q: u16,
         tt: Option<Vec<u16>>,
     ) -> Result<Self::Item, Self::Error>;
-
-    /// Process this wire as output.
-    fn output(&mut self, x: &Self::Item) -> Result<(), Self::Error>;
 
     ////////////////////////////////////////////////////////////////////////////////
     // Functions built on top of basic fancy operations.
@@ -253,13 +252,5 @@ pub trait Fancy {
         } else {
             self.constant(1, 2)
         }
-    }
-
-    /// Output a slice of wires.
-    fn outputs(&mut self, xs: &[Self::Item]) -> Result<(), Self::Error> {
-        for x in xs.iter() {
-            self.output(x)?;
-        }
-        Ok(())
     }
 }
